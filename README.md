@@ -15,6 +15,15 @@ turning one terminal pass/fail bit into a *trajectory of belief, and a map of wh
 - 🔁 **Reproduce:** `poc/run_airline.py` → `poc/analyze_beliefs.py` (raw: `poc/trajectories.json`, `poc/analysis.json`)
 - 🧬 **Provenance:** trimmed text-only fork of [`sierra-research/tau2-bench`](https://github.com/sierra-research/tau2-bench) (τ³) — see [`VENDOR.md`](VENDOR.md). Upstream README: [`README_upstream_tau3.md`](README_upstream_tau3.md).
 
+> **Prior art — τ²-Bench, and the delta.** This forks Sierra's **τ²-Bench** (`tau2-bench`), whose
+> contribution over τ-bench is **dual control**: the *user* can also act on the shared world, so the bench
+> tests agent↔user *coordination*. But τ² enriched the **action** space and still grades the **terminal
+> world state** (`calculate_reward`) — it stayed blind to the agent's *evolving belief about the user's
+> problem*. This layer is **orthogonal**: it enriches the **observation/grading** space — a per-turn belief
+> trajectory + a structured `ProblemSpec` that catches non-DB constraint violations (task 47 *passes* τ²'s
+> grade while violating an explicit "don't transfer me"). **τ² added *who can act*; this adds *what the
+> grader can see*.** Composable with dual control, not a competitor to it.
+
 > **Why "belief", not "reward"?** τ-bench's pass/fail comes from its RL/POMDP framing (`calculate_reward()`).
 > In *eval* it's a **grade**; the same scalar only becomes a *reward* when fed to the `gym/` wrapper to
 > fine-tune. This layer measures the **belief** behind that grade.
