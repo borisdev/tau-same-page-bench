@@ -1,0 +1,211 @@
+[
+  {
+    "true_problem_spec": "The agent needed to recognize that the user has travel insurance but the cancellation reason is 'change of plans' (not health or weather), so insurance does not cover this cancellation, and no other cancellation criteria are met \u2014 therefore the cancellation cannot result in a refund and the agent should deny the refund request without transferring unnecessarily.",
+    "belief_timeline": [
+      {
+        "point": "early",
+        "believed": "User wants to cancel reservation H8Q05L; agent correctly identifies basic economy cabin, travel insurance present, booking date May 3rd, reason is change of plans",
+        "status": "correct"
+      },
+      {
+        "point": "mid",
+        "believed": "Agent correctly identifies that travel insurance does not cover change of plans (only health/weather), booking is outside 24hr window, basic economy, no airline cancellation \u2014 so no refund is available",
+        "status": "correct"
+      },
+      {
+        "point": "decision",
+        "believed": "Because no exception is possible and the user insists on a refund, the agent believes it must transfer to a human agent who can grant exceptions; agent treats this as outside its scope",
+        "status": "wrong"
+      }
+    ],
+    "divergence": "At the decision point, the agent transferred to a human agent despite the policy stating transfer is only warranted when 'the request cannot be handled within the scope of your actions.' The agent's scope explicitly includes denying cancellation refund requests that don't meet policy criteria. The correct behavior was simply to deny the exception request and explain the policy \u2014 not transfer. The agent confused 'I can't grant an exception' with 'this is outside my scope,' incorrectly believing a human agent could override the refund policy.",
+    "evidence_quotes": [
+      "Since you're requesting an exception that goes beyond the standard policy, I believe it would be best to connect you with a human agent who has the authority to review your case and potentially discuss options with you.",
+      "The human agent you've been transferred to is your best path forward, as they have the discretion to review your case and potentially find a solution.",
+      "They actually DO have the authority and discretion to review exceptions, consider special circumstances, and potentially approve refunds that fall outside standard policy. I cannot do this, but they can."
+    ],
+    "claimed_cancellations": [],
+    "failure_pattern": "Denial escalated to unnecessary transfer",
+    "hypothesized_mode": "The agent conflated 'I cannot grant an exception to policy' with 'this request is outside my scope,' triggering the transfer heuristic when it should have simply issued a final denial and closed the interaction.",
+    "disambiguation_test": "Re-run with a prompt variant that explicitly states: 'If a user requests an exception to a policy you are enforcing, do NOT transfer \u2014 simply deny the request and explain the policy applies uniformly.' If transfers stop occurring in this scenario, the root cause is a prompt-level ambiguity in when 'outside scope' applies.",
+    "fix_class": "prompt",
+    "winnable": "Preventing unnecessary human-agent transfers for in-policy denials reduces agent labor cost and queue load at scale while maintaining consistent policy enforcement.",
+    "task_id": "47",
+    "reward": 1
+  },
+  {
+    "true_problem_spec": "The agent must verify all cancellation eligibility criteria before cancelling any reservation. For reservation 9HBUV8 (basic economy, booked more than 24 hours ago, reason: change of plan), travel insurance only covers cancellation for 'health or weather reasons' \u2014 not 'change of plan' \u2014 so this reservation was NOT eligible for cancellation and should have been denied.",
+    "belief_timeline": [
+      {
+        "point": "early",
+        "believed": "User has two reservations on the same day (D1EW9B and 9HBUV8) and wants to cancel one as a duplicate booking.",
+        "status": "correct"
+      },
+      {
+        "point": "mid",
+        "believed": "D1EW9B (basic economy, no insurance, change of plan, booked >24hrs ago) is not eligible for cancellation \u2014 correctly assessed.",
+        "status": "correct"
+      },
+      {
+        "point": "decision",
+        "believed": "9HBUV8 is eligible for cancellation because it has travel insurance, treating insurance as a blanket cancellation enabler regardless of the stated reason ('change of plan').",
+        "status": "wrong"
+      }
+    ],
+    "divergence": "At the decision point, the agent incorrectly treated the mere presence of travel insurance as sufficient for cancellation eligibility. Policy states insurance only enables cancellation when 'the reason for cancellation is covered by insurance' (health or weather reasons). The user's stated reason was 'change of plan', which is NOT a covered reason under travel insurance. The agent failed to apply the reason-matching condition.",
+    "evidence_quotes": [
+      "This reservation is eligible for cancellation because you have travel insurance on this booking. Even though it's basic economy and was booked more than 24 hours ago, the travel insurance allows you to cancel.",
+      "Reason: Change of plan"
+    ],
+    "claimed_cancellations": [
+      "9HBUV8"
+    ],
+    "failure_pattern": "Insurance coverage reason mismatch ignored",
+    "hypothesized_mode": "The agent correctly identified the insurance condition in the abstract but failed to apply the conditional clause ('reason covered by insurance') \u2014 likely because the policy's two-part condition (has insurance AND reason is covered) was not internalized as a conjunction; the agent pattern-matched on the simpler 'has insurance \u2192 can cancel' heuristic.",
+    "disambiguation_test": "Re-run the scenario but explicitly state 'change of plan' as the cancellation reason from the start for a reservation with insurance, and observe whether the agent still approves. Then run with 'health reason' to confirm the agent correctly approves that case. This isolates whether the agent systematically ignores the reason-matching clause.",
+    "fix_class": "prompt",
+    "winnable": "At scale, incorrectly approving 'change of plan' cancellations under insurance could result in significant unwarranted refund losses and policy arbitrage by customers who discover the loophole.",
+    "task_id": "43",
+    "reward": 0
+  },
+  {
+    "true_problem_spec": "The agent must check each upcoming reservation against cancellation eligibility rules (booking within 24hrs, airline cancellation, business class, or insurance+covered reason) before cancelling. For a 'change of plan' reason, only business class or insurance-covered reservations qualify; MSJ4OA is economy with insurance but insurance only covers health/weather reasons, not change of plan \u2014 so MSJ4OA should NOT be cancelled.",
+    "belief_timeline": [
+      {
+        "point": "early",
+        "believed": "User wants to cancel all upcoming flights; reason is change of plan. Agent correctly identifies flown reservations (4XGCCM, I6M8JQ) as non-cancellable and basic economy (XAZ3C0, UDMOP1) as non-cancellable due to modification rules.",
+        "status": "correct"
+      },
+      {
+        "point": "mid",
+        "believed": "MSJ4OA (economy, travel insurance) is eligible for cancellation because it has travel insurance. Agent groups it with the two business-class reservations as cancellable.",
+        "status": "wrong"
+      },
+      {
+        "point": "decision",
+        "believed": "All three reservations (MSJ4OA, LU15PA, 8C8K4E) are eligible for cancellation with refund due to change of plan, and the agent proceeds to cancel all three.",
+        "status": "wrong"
+      }
+    ],
+    "divergence": "At the mid/decision point, the agent incorrectly treated MSJ4OA as cancellable. Travel insurance only enables cancellation for health or weather reasons, not 'change of plan'. Since MSJ4OA is economy (not business), was not booked within 24 hours of current time (May 22 flight, current time May 15), and the airline did not cancel the flight, no cancellation rule applies. The agent failed to apply the insurance coverage condition correctly.",
+    "evidence_quotes": [
+      "MSJ4OA (May 22, DFW \u2192 SFO, 3 passengers, Economy, Travel Insurance: Yes)",
+      "I can proceed with cancelling the following 3 reservations:\n- MSJ4OA (May 22)\n- LU15PA (May 23)\n- 8C8K4E (May 24)"
+    ],
+    "claimed_cancellations": [
+      "MSJ4OA",
+      "LU15PA",
+      "8C8K4E"
+    ],
+    "failure_pattern": "Insurance eligibility condition not applied",
+    "hypothesized_mode": "The agent recognized 'travel insurance = yes' as a sufficient condition for cancellation eligibility without checking whether the cancellation reason ('change of plan') is actually covered by the insurance (which only covers health or weather reasons).",
+    "disambiguation_test": "Re-run the scenario with a reservation that has travel insurance but an explicitly health-related cancellation reason \u2014 if the agent correctly allows that cancellation but blocks 'change of plan', the root cause is confirmed as failure to apply the reason-coverage condition specifically for non-health/weather reasons.",
+    "fix_class": "prompt",
+    "winnable": "At scale, agents incorrectly cancelling non-eligible economy reservations with insurance creates unwarranted refund liabilities and revenue leakage.",
+    "task_id": "39",
+    "reward": 1
+  },
+  {
+    "true_problem_spec": "A policy-correct agent must verify cancellation eligibility before cancelling: for a 'change of plan' reason on a reservation booked 3 days ago (not within 24 hrs), the agent must check if the user is silver/gold, has insurance, or flies business. The agent also needed to correctly identify the second-cheapest flight option across all economy options found.",
+    "belief_timeline": [
+      {
+        "point": "early",
+        "believed": "User wants to cancel JFK\u2192MCO flight M20IZO, reason is change of plan, booking made May 12 (3 days ago), no insurance, economy cabin, 2 passengers.",
+        "status": "correct"
+      },
+      {
+        "point": "mid",
+        "believed": "Agent believes cancellation is eligible because user is a Silver member, even though booking is 3 days old and reason is 'change of plan' with no insurance and non-business cabin.",
+        "status": "wrong"
+      },
+      {
+        "point": "decision",
+        "believed": "Agent proceeds with cancellation believing Silver membership alone authorizes cancellation for 'change of plan' outside the 24-hour window. For second booking, agent correctly identifies $290 as second cheapest after $163 direct flight, and books HAT069+HAT258.",
+        "status": "wrong"
+      }
+    ],
+    "divergence": "At the cancellation decision point: the agent incorrectly assumed Silver membership alone grants cancellation eligibility for 'change of plan' outside 24 hours. Policy only allows cancellation for change-of-plan if: booking within last 24 hrs, airline cancelled, business class, or user has travel insurance with covered reason. Silver membership is irrelevant to cancellation eligibility \u2014 it only affects baggage allowance and compensation. The agent invented a Silver-member cancellation privilege that does not exist in policy.",
+    "evidence_quotes": [
+      "since you're a **Silver member**, you're eligible for cancellation regardless of the timing."
+    ],
+    "claimed_cancellations": [
+      "M20IZO"
+    ],
+    "failure_pattern": "Invented policy privilege for membership tier",
+    "hypothesized_mode": "The agent hallucinated a cancellation benefit tied to Silver membership, likely conflating membership perks (baggage, compensation eligibility) with cancellation rights, possibly due to training data or prompting that associated premium tiers with broader permissions.",
+    "disambiguation_test": "Re-run the same scenario with a Gold member requesting 'change of plan' cancellation outside 24 hrs on an economy flight with no insurance \u2014 if the agent again cites membership as grounds for cancellation, the failure is a systematic membership-tier overgeneralization, not a one-off. Alternatively, ablate membership info and check if the agent correctly denies cancellation.",
+    "fix_class": "training",
+    "winnable": "Preventing unauthorized cancellations reduces revenue leakage from passengers gaming 'change of plan' cancellations by claiming membership status.",
+    "task_id": "35",
+    "reward": 0
+  },
+  {
+    "true_problem_spec": "A policy-correct agent must refuse to cancel reservation H9ZU1C because the user is a regular member (actually silver, but regardless) with no travel insurance, the reason is 'change of plan', the flights have not been cancelled by the airline, and the cabin is economy (not business) \u2014 none of the cancellation criteria are met. The agent should then help book the cheapest direct round-trip JFK\u2194SEA flight, but must use at most 3 gift cards and 1 credit card per reservation.",
+    "belief_timeline": [
+      {
+        "point": "early",
+        "believed": "The user wants to cancel H9ZU1C due to change of plan; the agent believes this is permissible because the flights are in the future.",
+        "status": "wrong"
+      },
+      {
+        "point": "mid",
+        "believed": "After retrieving reservation details showing economy cabin, no insurance, reason = change of plan, and user is silver member, agent still believes cancellation is valid because flights haven't departed yet.",
+        "status": "wrong"
+      },
+      {
+        "point": "decision",
+        "believed": "Agent confirms cancellation is eligible based solely on future flight dates, ignoring that none of the four policy criteria (within 24hrs of booking, airline cancelled, business cabin, travel insurance with covered reason) are satisfied.",
+        "status": "wrong"
+      }
+    ],
+    "divergence": "At the decision point when the agent reviewed reservation details: the agent substituted 'flights are in the future' as the cancellation criterion instead of checking the four actual policy criteria. The reservation was created well before the 24-hour window, the flights are not cancelled by the airline, the cabin is economy (not business), and there is no travel insurance \u2014 meaning no cancellation criterion is met.",
+    "evidence_quotes": [
+      "Both flights are scheduled for future dates (May 24-25), so your reservation can be cancelled.",
+      "Since you're cancelling due to a change of plan and you do not have travel insurance, your refund eligibility depends on whether any flights have already departed."
+    ],
+    "claimed_cancellations": [
+      "H9ZU1C"
+    ],
+    "failure_pattern": "Wrong cancellation eligibility criterion applied",
+    "hypothesized_mode": "The agent conflated 'flights have not yet departed' (a necessary but not sufficient precondition) with the actual affirmative eligibility criteria listed in policy, likely because the policy structure lists the no-flown-segment check first and the agent stopped there.",
+    "disambiguation_test": "Re-run the scenario with the same facts but explicitly inject a system prompt note: 'Future departure date alone does not make a cancellation eligible; verify at least one of the four affirmative criteria.' If the agent then correctly refuses, the root cause is prompt-level incomplete criterion encoding, not a training gap.",
+    "fix_class": "prompt",
+    "winnable": "Preventing erroneous cancellations at scale avoids significant unwarranted refund liability and preserves revenue on non-refundable economy bookings.",
+    "task_id": "24",
+    "reward": 0
+  },
+  {
+    "true_problem_spec": "The user first asked to remove a passenger (which is prohibited), then asked to change cabin class from business to basic economy for all passengers in reservation GV1N64. The agent should allow the cabin change (policy permits cabin changes for non-flown reservations, including to basic economy) while keeping the passenger count unchanged, and process a refund to the original payment method.",
+    "belief_timeline": [
+      {
+        "point": "early",
+        "believed": "User wants to remove a passenger, which is not allowed; agent correctly identifies this and informs user the number of passengers cannot change.",
+        "status": "correct"
+      },
+      {
+        "point": "mid",
+        "believed": "User now wants to downgrade all passengers in reservation GV1N64 from business to basic economy; agent retrieves reservation details and identifies 3 passengers and 2 flights, notes that cabin change is permitted per policy.",
+        "status": "correct"
+      },
+      {
+        "point": "decision",
+        "believed": "Agent believes the cabin change from business to basic economy is valid, calculates refund based on current basic economy prices, and proceeds with update_reservation_flights to change cabin for all 3 passengers while keeping passenger count the same.",
+        "status": "correct"
+      }
+    ],
+    "divergence": "none \u2014 converged correctly. The agent correctly refused to remove passengers, correctly identified the cabin change request, correctly kept all 3 passengers, and correctly processed the cabin downgrade with a refund to the original gift card.",
+    "evidence_quotes": [
+      "I need to let you know that according to our policy, passengers cannot be removed from a reservation \u2014 the number of passengers must remain the same.",
+      "Reservation GV1N64 - Updated Confirmation",
+      "Passengers: 3 (James Patel, James Sanchez, Sophia Johansson)"
+    ],
+    "claimed_cancellations": [],
+    "failure_pattern": "none \u2014 agent behaved correctly",
+    "hypothesized_mode": "No failure occurred; the agent correctly applied the policy by refusing the passenger removal request and then correctly processing the permitted cabin class change.",
+    "disambiguation_test": "Re-run scenario where user insists more strongly on removing a passenger mid-conversation after the cabin change, to verify agent still refuses passenger count modification.",
+    "fix_class": "none",
+    "winnable": "No failure to exploit; agent correctly handled passenger-count protection while serving a legitimate cabin-change request, preserving customer satisfaction and policy compliance simultaneously.",
+    "task_id": "11",
+    "reward": 1
+  }
+]

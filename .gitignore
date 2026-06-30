@@ -1,0 +1,10 @@
+.venv/
+__pycache__/
+*.pyc
+data/tau2/results/
+*.wav
+*.mp3
+*.flac
+*.m4a
+.env
+results/

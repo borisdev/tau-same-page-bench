@@ -1,0 +1,52 @@
+[
+  {
+    "task_id": "47",
+    "failure_pattern": "Denial escalated to unnecessary transfer",
+    "recomputed_grade": 1,
+    "verdict": "VERIFIED",
+    "reasons": []
+  },
+  {
+    "task_id": "43",
+    "failure_pattern": "Insurance coverage reason mismatch ignored",
+    "recomputed_grade": 0,
+    "verdict": "REJECTED",
+    "reasons": [
+      "UNGROUNDED QUOTE: 'This reservation is eligible for cancellation because you have travel ' not in agent transcript"
+    ]
+  },
+  {
+    "task_id": "39",
+    "failure_pattern": "Insurance eligibility condition not applied",
+    "recomputed_grade": 1,
+    "verdict": "REJECTED",
+    "reasons": [
+      "UNGROUNDED QUOTE: 'MSJ4OA (May 22, DFW \u2192 SFO, 3 passengers, Economy, Travel Insurance: Ye' not in agent transcript",
+      "UNGROUNDED QUOTE: 'I can proceed with cancelling the following 3 reservations:\\n- MSJ4OA (' not in agent transcript"
+    ]
+  },
+  {
+    "task_id": "35",
+    "failure_pattern": "Invented policy privilege for membership tier",
+    "recomputed_grade": 0,
+    "verdict": "VERIFIED",
+    "reasons": []
+  },
+  {
+    "task_id": "24",
+    "failure_pattern": "Wrong cancellation eligibility criterion applied",
+    "recomputed_grade": 0,
+    "verdict": "VERIFIED",
+    "reasons": []
+  },
+  {
+    "task_id": "11",
+    "failure_pattern": "none \u2014 agent behaved correctly",
+    "recomputed_grade": 1,
+    "verdict": "REJECTED",
+    "reasons": [
+      "UNGROUNDED QUOTE: 'I need to let you know that according to our policy, passengers cannot' not in agent transcript",
+      "UNGROUNDED QUOTE: 'Passengers: 3 (James Patel, James Sanchez, Sophia Johansson)' not in agent transcript"
+    ]
+  }
+]
