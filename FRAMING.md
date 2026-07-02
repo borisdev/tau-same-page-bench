@@ -1,7 +1,5 @@
 # Framing & related work
 
-This places the project in the vocabulary the ML and AI-safety literature already uses. Two ideas.
-
 ## 1. The agent's belief converging to the hidden problem
 
 The task is *partially observable*: the agent maintains a **belief state** — a posterior over a **latent variable** (the user's true objective) that it updates from partial, incrementally-revealed evidence.

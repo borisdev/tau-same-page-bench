@@ -112,7 +112,7 @@ A human transfer **doesn't change the database.** The grade only watches the dat
 
 3. **Detection is separable from the fix.** Encoding the requirement as a `ProblemSpec` constraint makes it gradeable (§below). Whether the underlying behavior is best corrected by a prompt rule or requires additional training data is a separate, testable question — add the rule and re-run; if the behavior persists, it is a data problem, not a prompt one.
 
-## 5. Provenance (so this isn't hand-waving)
+## 5. Provenance
 
 - **Grade** verified against τ³'s real spec (`reward_basis`), not asserted.
 - **The transfer quote + tool call** verified *verbatim* against the transcript by `verify_findings.py` → **VERIFIED** (the same automated check auto-rejected fabricated findings on other tasks).
