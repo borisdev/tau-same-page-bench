@@ -36,29 +36,34 @@ We add two structured entities — the same shape in two roles: a true **`Proble
 Structured, it becomes the **true `ProblemSpec`** — each requirement now a checkable predicate (`TASK_47_SPEC` in [`problem_spec.py`](https://github.com/borisdev/tau-same-page-bench/blob/feat/structured-problemspec/src/tau2/data_model/problem_spec.py)):
 
 ```python
-ProblemSpec(                                        # ground truth — the target
+ProblemSpec(                                  # ground truth — the target
   goal="cancel; refund-only",
+  transfer_requested=False,                   # user never asked to transfer
+  refund_eligible=False,                       # not eligible
   constraints=[
-    Constraint("no transfer unless the user asks"),
-    Constraint("no cancel unless full refund")])
+    Constraint("no transfer unless transfer_requested"),
+    Constraint("no cancel  unless refund_eligible")])
 ```
 
 **The agent never sees this spec — it must infer it.** The `ProblemSpecBelief` is that same spec as the agent estimates it; the slots its constraints depend on start `UNKNOWN`. Here it diverges — at the moment it acts (turn 12), the slot behind the *no-transfer* constraint is still `UNKNOWN`:
 
 ```python
-ProblemSpecBelief(turn=1,        # the agent's estimate — nothing resolved yet
+ProblemSpecBelief(turn=1,        # same shape as the spec — nothing resolved yet
   goal="cancel + refund",
-  transfer_requested=UNKNOWN,     # slot behind "no transfer unless asks"
-  refund_eligible=UNKNOWN)        # slot behind "no cancel unless refund"
+  transfer_requested=UNKNOWN,
+  refund_eligible=UNKNOWN,
+  constraints=[...])             # inferred; identical to the true spec
 
-ProblemSpecBelief(turn=12,
+ProblemSpecBelief(turn=12,       # refund now resolved; transfer never
   goal="cancel + refund",
-  refund_eligible=False,          # resolved
-  transfer_requested=UNKNOWN,     # never resolved — yet…
-  action="transfer")              # …acted anyway
+  transfer_requested=UNKNOWN,    # ← still unresolved
+  refund_eligible=False,
+  constraints=[...])             # same
 ```
 
-The belief never converged on `transfer_requested`; the agent acted while it was `UNKNOWN`. Full per-turn trajectory and graded verdict: [`poc/CASE_STUDY.md`](poc/CASE_STUDY.md).
+At turn 12 the agent calls `transfer_to_human_agents()` while `transfer_requested` is still `UNKNOWN` — it acts on an unresolved slot. That is the violation, and it's invisible to the DB grade. Full per-turn trajectory and graded verdict: [`poc/CASE_STUDY.md`](poc/CASE_STUDY.md).
+
+<sub>The belief is the same shape as the `ProblemSpec` (minus `turn`); the live version also tags each slot with provenance — `status: inferred/assumed`, `evidence_turn` — to separate a resolved fact from a guess.</sub>
 
 ### Enriching the spec with expertise (three examples)
 
@@ -71,18 +76,6 @@ These are the **`UNKNOWN`-slot mechanics** made concrete — which slots must be
 | Grader penalty when an escalating action fires under `UNKNOWN`. | Turns the belief signal into a reward component the lab can use in eval or training. | the **severity weight** |
 
 Because the `ProblemSpec` is versioned, executable **policy-as-code**, each addition is an auditable record of what *correct* means as policy evolves.
-
-## Where expert elicitation raises grader fidelity
-
-The three fixes above generalize. A grader can only check predicates that have been enumerated, and the decisive ones are **tacit** — they live in expert practice, not the written policy. Beyond the invariant, precondition, and severity weight shown above, three more bounded, one-time elicitations — each amortized across every trajectory the grader scores:
-
-| Elicit | Raises |
-|---|---|
-| **Epistemic bar** — culpable for not resolving ambiguity, or only for defying a stated *no*? | adjudication of borderline cases |
-| **Reference trajectories** — the correct behavior at the failing turn | verdict from *flag* → *counterfactual*; also the supervision signal |
-| **Judge-calibration set** — expert labels, held out | fidelity as a measured judge–expert agreement, not an assertion |
-
-The grader is only as good as the ontology it compiles — and the ontology is precisely the part that isn't written down. Expanded in [`PROBLEM_BELIEF_SPEC.md` §8](PROBLEM_BELIEF_SPEC.md).
 
 ---
 
