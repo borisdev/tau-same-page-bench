@@ -1,6 +1,6 @@
-# τ-same-page-bench
+# τ-CommonGround
 
-*How well does the agent get on the same page with the user?*
+*Does the agent establish sufficient common ground — enough shared understanding — before acting?*
 
 **This benchmark.** We extend τ³-bench from grading only the terminal database state to also grading whether the agent got on the same page with the user before acting.
 
@@ -11,6 +11,21 @@
 > **Two phases.** This paper delivers **Phase 1** and is built to feed **Phase 2** — keep an eye on the second one; it's where the expert data enters.
 > 1. **Flag — automated, no expert.** An LLM-as-judge structures the latent problem (from τ³ `task_instructions`) and the agent's belief, then flags **epistemic ambiguity**: the agent acting before it resolved what it needed to know.
 > 2. **Fill — targeted expert data.** Only at the flagged spots, a domain expert authors the missing rule as a **PDDL epistemic precondition** — which then drives both **grading** and **gating**.
+
+## Key terms
+
+A quick glossary before the deeper sections.
+
+- **Common ground / common grounding** — the shared understanding two parties create, repair, and update in dialogue; an established term (Clark 1991; [Udagawa & Aizawa, AAAI 2019](https://arxiv.org/abs/1907.03399)). Informally, being "on the same page."
+- **Ontic** — about what is *true in the world* (a state-checkable fact).
+- **Epistemic** — about what the agent *knows* (a belief, possibly still unresolved).
+- **`ProblemSpec`** — the true, typed shape of the user's problem (ground truth; the agent never sees it).
+- **`ProblemSpecBelief`** — the agent's estimate of that shape; slots start `UNKNOWN` until resolved.
+- **Ambiguity** — the gap between `ProblemSpec` and `ProblemSpecBelief` on the fields the pending action needs.
+- **Epistemic precondition** — a fact the agent must *know* before an action may fire.
+- **Epistemic ambiguity** — acting before a required epistemic precondition is resolved (the failure we flag).
+- **Gating / grading** — applying a precondition at runtime (ask vs. act) / in eval (pass vs. fail).
+- **PDDL** — Planning Domain Definition Language; models an action as name / parameters / preconditions / effects.
 
 ## Innovation
 
