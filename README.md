@@ -1,6 +1,6 @@
 # τ-PreflightCheck
 
-*Before an AI agent fires a consequential action, does it run a preflight check — confirming the user's latent requirements that no database can answer?*
+*Before an AI agent fires a consequential action, does it run a preflight check that probes the user's unobserved understanding and preferences — so it doesn't hurt or hassle the user?*
 
 ## Motivation
 
