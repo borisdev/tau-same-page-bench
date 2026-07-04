@@ -29,7 +29,7 @@
 - **Epistemic predicate** — a fact about what the *agent knows*. **No DB query can resolve it** — the agent must **probe the user** (ask) to reduce the ambiguity in its belief. *Why the word earns its keep (counterfactual):* drop "epistemic" and "precondition" defaults to **ontic** — you query the DB, see nothing wrong, and pass task 47. "Epistemic" is the intervention: it redirects the check from the world to the agent's belief. Without the word, the failure is invisible.
 - **`ProblemSpec`** — the true, typed shape of the user's problem (ground truth; the agent never sees it). Its fields are ontic or epistemic. [see it built →](#problemspec-and-problemspecbelief)
 - **`ProblemSpecBelief`** — the agent's estimate of the `ProblemSpec`; each slot `UNKNOWN` until the agent resolves it by probing.
-- **Ambiguity** — the gap between the `ProblemSpec` and the `ProblemSpecBelief` over the fields the pending action needs.
+- **Ambiguity** — the gap between the true `ProblemSpec` and the agent's `ProblemSpecBelief` over the fields required to safely execute the pending action.
 - **Epistemic precondition** — an epistemic predicate an action requires the agent to *know* (resolve) before it may fire. [details →](docs/epistemic-preconditions.md)
 - **Underspecification** *(cause)* — an action's epistemic preconditions were never authored; the policy is incomplete.
 - **Epistemic ambiguity** *(effect)* — the agent acts while an epistemic precondition is still unresolved. Underspecification is the **cause**; epistemic ambiguity is the **symptom** our eval flags — and an expert resolves it by authoring the missing precondition.
@@ -48,10 +48,6 @@ Our eval innovation: we **instrument the unobservable** — the user's latent pr
 - **Human expertise becomes reusable data** — the shape of the `ProblemSpec` lets us collect expert judgment and encode it as **human-expert data** that both grades and gates agent behavior. [SME-authored policy →](#sme-authored-policy-what-ambiguity-to-resolve-before-acting)
 
 ---
-
-## What is "resolving ambiguity" (reaching common ground) all about?
-
-We define **ambiguity** as the gap between the true [`ProblemSpec`](#problemspec-and-problemspecbelief) and the agent's [`ProblemSpecBelief`](#problemspec-and-problemspecbelief) over the fields required to safely execute the pending action.
 
 ## τ³-bench passes a real violation on airline task 47
 
