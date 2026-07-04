@@ -153,6 +153,8 @@ Each is a `belief.X` guard on the belief state. Violations are **DB-invisible**:
 
 → Why state-grading is blind to these, what each guard encodes (invariant / action precondition / severity), and how one policy drives both **grading** and **gating** (with the three-valued ABAC framing): [`docs/epistemic-preconditions.md`](docs/epistemic-preconditions.md).
 
+→ A fuller **illustrative** preflight checklist across ~25 airline actions (draft — not yet tool-bound or policy-traced): [`docs/preflight-checklist-example.md`](docs/preflight-checklist-example.md).
+
 ## Root cause of the false pass: task instructions ↔ grading criteria drift
 
 `task_instructions` and `evaluation_criteria` are separate hand-authored artifacts, so they drift — task 47 is where the scenario forbids the transfer but the graded criteria don't. A single `ProblemSpec` compiled to both closes the drift by construction. → [`PROBLEM_BELIEF_SPEC.md`](PROBLEM_BELIEF_SPEC.md)
