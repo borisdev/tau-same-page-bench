@@ -18,7 +18,7 @@ We ran Claude Haiku on τ³-bench airline task 47 and flag an **in-spirit failur
 }
 ```
 
-τ³ scored it **PASS** anyway — *The patch* (below) shows how we make that requirement gradeable.
+*The patch* (below) shows how we make that requirement gradeable.
 
 ## Medical side-effects analogy
 
