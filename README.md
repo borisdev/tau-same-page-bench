@@ -26,13 +26,7 @@ We ran Claude Haiku on τ³ airline task 47 and found a grading failure:
 
 *("Sufficiently understand the user's state of mind" = the user's **epistemic state** — their model of reality. Where it diverges from the agent's, for a specific action, harm can follow.)*
 
-## Roadmap
-
-A three-phase plan; Phase 1 — this paper — unblocks Phases 2 and 3.
-
-> 1. **Flag Ignorance** *(this paper)* — use evals to surface where the agent is ignorant of the user's problem.
-> 2. **Resolve Ignorance** *(Human Subject Matter Expert)* — turn each ignorance pattern into an **action-precondition rule** the grader can score.
-> 3. **Preflight Check** *(AI builder)* — turn each rule into the agent's pre-action gate: when a required belief is `UNKNOWN`, **halt and ask** before firing. ([example checklist →](docs/preflight-checklist-example.md))
+**Scope.** This paper delivers the *detection* — finding where agents skip these checks. Turning each miss into an expert-authored rule, then a runtime *halt-and-ask* gate, is the downstream work it unblocks.
 
 ## Glossary
 
