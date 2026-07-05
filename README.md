@@ -26,12 +26,6 @@ We ran Claude Haiku on τ³ airline task 47 and found a grading failure:
 
 *("Sufficiently understand the user's state of mind" = the user's **epistemic state** — their model of reality. Where it diverges from the agent's, for a specific action, harm can follow.)*
 
-## Innovation
-
-Our eval innovation: we **instrument the unobservable** — the user's latent problem and the agent's current belief — as two comparable typed objects, and treat the **gap between them as the failure signal**. That gap flags exactly where **targeted expert data** most improves AI quality.
-
----
-
 <details>
 <summary><b>Glossary</b> — key terms, sequenced by dependency (click to expand)</summary>
 
@@ -60,6 +54,8 @@ Deeper theory and full prior art (POMDP belief states, assistance games, epistem
 </details>
 
 ## The patch: make the implicit requirement explicit
+
+Our eval innovation: we **instrument the unobservable** — the user's latent problem and the agent's current belief — as two comparable typed objects, and treat the **gap between them as the failure signal**. That gap flags exactly where **targeted expert data** most improves AI quality.
 
 τ-PreflightCheck adds one optional field to τ³'s `StructuredUserInstructions`, plus a grader that reads it. The schema change:
 
