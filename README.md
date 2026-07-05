@@ -56,20 +56,20 @@ Deeper theory and full prior art (POMDP belief states, assistance games, epistem
 
 </details>
 
-## ProblemSpec and ProblemSpecBelief
+## Structuring τ³'s own requirements → `StructuredUserInstructionsV2`
 
-We introduce two typed representations — an instrumentation layer over τ³. They are the same shape in two roles: a true **`ProblemSpec`** (the target) and the agent's **`ProblemSpecBelief`** (its estimate). Handing the agent the spec's *shape* — not its per-task values — also makes it a better agent: it knows which questions to ask before acting.
-
-**From τ³'s `StructuredUserInstructions` to a checkable spec.** τ³ already gives semi-structured user instructions — a `UserScenario` wrapping a [`StructuredUserInstructions`](https://github.com/borisdev/tau-preflight-check/blob/591a7a5474666b90634eb9b1ec51371b889bc1db/src/tau2/data_model/tasks.py#L15-L48):
+τ³ already gives each simulated user a semi-structured [`StructuredUserInstructions`](https://github.com/borisdev/tau-preflight-check/blob/591a7a5474666b90634eb9b1ec51371b889bc1db/src/tau2/data_model/tasks.py#L15-L48). But its `task_instructions` field is overloaded prose — it mixes goal, constraints, consent, and simulator behavior, and the grader checks only a subset. So we add **`StructuredUserInstructionsV2`**: the simulator prose stays **byte-for-byte unchanged**, and the user's action-relevant requirements are *also* represented as typed, checkable fields.
 
 ```text
 UserScenario
 ├── persona
-└── instructions: StructuredUserInstructions
+└── instructions: StructuredUserInstructionsV2
+    ├── domain
     ├── reason_for_call
     ├── known_info
     ├── unknown_info
-    └── task_instructions   ← user requirements (prose) → compiled to the typed ProblemSpec
+    ├── task_instructions          ← unchanged simulator prose
+    └── structured_requirements    ← new, grader-visible typed requirements
 ```
 
 For task 47, the user's `task_instructions` — the requirements, broken out (the real field is one prose string; [source ↗](https://github.com/borisdev/tau-preflight-check/blob/591a7a5474666b90634eb9b1ec51371b889bc1db/data/tau2/domains/airline/tasks.json#L3408-L3416)). The line in **red** is a real, stated requirement that τ³'s structured criteria never check — effectively **deleted** from what gets graded:
@@ -86,34 +86,41 @@ For task 47, the user's `task_instructions` — the requirements, broken out (th
 }
 ```
 
-We compile those prose requirements (*don't transfer*, *don't cancel unless refunded*) into the **true `ProblemSpec`** — each now a checkable predicate (`TASK_47_SPEC` in [`problem_spec.py`](https://github.com/borisdev/tau-preflight-check/blob/feat/structured-problemspec/src/tau2/data_model/problem_spec.py)):
+We lift those stated requirements into typed `structured_requirements` — with the *correct* semantics and full provenance:
 
 ```python
-ProblemSpec(                                  # ground truth — the target
-  goal="cancel; refund-only",
-  transfer_requested=False,                   # user never asked to transfer
-  refund_eligible=False,                       # not eligible
+StructuredUserRequirements(
+  goal="obtain a full refund",
+  authorizations={
+    # explicit refusal — stronger than "no transfer was requested"
+    "transfer_to_human_agents": ConsentStatus.DENIED,
+    # conditional: cancel only if the world offers a full refund
+    "cancel_reservation": ConditionalAuthorization(
+        action="cancel_reservation", condition="full_refund_available"),
+  },
   constraints=[
-    Constraint("no transfer unless transfer_requested"),
-    Constraint("no cancel  unless refund_eligible")])
+    TaskConstraint(
+      id="task47.no_unwanted_transfer",
+      action="transfer_to_human_agents",
+      rule="must not transfer when transfer authorization is DENIED",
+      source_field="task_instructions",
+      source_quote="You don't want to be transferred to another agent."),
+  ])
 ```
 
-**The agent never sees this spec — it must infer it.** The `ProblemSpecBelief` is the *same object* as the agent estimates it — identical fields, its slots `UNKNOWN` until resolved, plus a `turn`. It starts all-`UNKNOWN`; by the time it acts (turn 12) it has resolved `refund_eligible` but never `transfer_requested`:
+Two semantics a looser encoding gets wrong: **`ConsentStatus.DENIED`** means the user *explicitly refused* — not merely that no transfer was requested; and cancellation is a **conditional** authorization — the *world* decides whether `full_refund_available` holds, so `refund_eligible` is a world fact, not the user's requirement. Every requirement carries a `source_quote`, so we can prove we **made an existing stated rule gradeable, not invented one.**
 
-```python
-ProblemSpecBelief(                            # the estimate — same shape, + turn
-  turn=12,
-  goal="cancel; refund-only",
-  transfer_requested=UNKNOWN,                 # ← never resolved (the bug)
-  refund_eligible=False,                       # resolved by turn 12
-  constraints=[
-    Constraint("no transfer unless transfer_requested"),
-    Constraint("no cancel  unless refund_eligible")])
+**Paired re-scoring — same trajectory, two graders.** V2 changes nothing the agent sees or the simulator says, so we score the *same recorded trajectory* two ways; any verdict difference is attributable to **what the grader can represent, not to a changed conversation**:
+
+```text
+same task · same simulator prose · same trajectory · same agent output
+        ├── τ³ grader (DB / outcome) .......... PASS
+        └── structured-requirements grader .... FAIL   (transfer fired; authorization = DENIED; turn 12)
 ```
 
-At turn 12 the agent calls `transfer_to_human_agents()` while `transfer_requested` is still `UNKNOWN` — it acts on an unresolved slot. That is the violation, and it's invisible to the DB grade. Full per-turn trajectory and graded verdict: [`poc/CASE_STUDY.md`](poc/CASE_STUDY.md).
+Full flip mechanics + independent verification: [`docs/pilot-details.md`](docs/pilot-details.md).
 
-<sub>The belief is the same shape as the `ProblemSpec` (minus `turn`); the live version also tags each slot with provenance — `status: inferred/assumed`, `evidence_turn` — to separate a resolved fact from a guess.</sub>
+<sub>Agent-side belief tracking — does the agent *resolve* each requirement before acting? — is a later phase; the paired re-scoring experiment needs only the grader's view, not the agent's belief.</sub>
 
 → **The epistemic precondition in depth** — the *ontic* vs *epistemic* definition, the SME hydration model, and the PDDL / Pydantic action frame — is in [`docs/epistemic-preconditions.md`](docs/epistemic-preconditions.md), kept off this page so a first-time reader meets the basics first.
 
@@ -128,7 +135,7 @@ The first funds the second: proving agents skip *stated* requirements opens the 
 
 ## Root cause of the false pass: task instructions ↔ grading criteria drift
 
-`task_instructions` and `evaluation_criteria` are separate hand-authored artifacts, so they drift — task 47 is where the scenario forbids the transfer but the graded criteria don't. A single `ProblemSpec` compiled to both closes the drift by construction. → [`PROBLEM_BELIEF_SPEC.md`](PROBLEM_BELIEF_SPEC.md)
+`task_instructions` and `evaluation_criteria` are separate hand-authored artifacts, so they drift — task 47 is where the scenario forbids the transfer but the graded criteria don't. A single typed requirement spec (V2) compiled to both closes the drift by construction. → [`PROBLEM_BELIEF_SPEC.md`](PROBLEM_BELIEF_SPEC.md)
 
 ---
 
