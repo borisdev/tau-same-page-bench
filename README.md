@@ -26,8 +26,6 @@ We ran Claude Haiku on τ³ airline task 47 and found a grading failure:
 
 *("Sufficiently understand the user's state of mind" = the user's **epistemic state** — their model of reality. Where it diverges from the agent's, for a specific action, harm can follow.)*
 
-**Scope.** This paper delivers the *detection* — finding where agents skip these checks. Turning each miss into an expert-authored rule, then a runtime *halt-and-ask* gate, is the downstream work it unblocks.
-
 ## Glossary
 
 *Sequenced by dependency — each definition uses only the terms above it. The [Innovation](#innovation) section below assumes all of them.*
