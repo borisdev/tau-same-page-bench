@@ -2,7 +2,7 @@
 
 [![CI](https://github.com/borisdev/tau-preflight-check-bench/actions/workflows/ci.yml/badge.svg)](https://github.com/borisdev/tau-preflight-check-bench/actions/workflows/ci.yml)
 
-*τ³ grades whether an agent reaches the goal. τ-PreflightCheck adds a second question: did it respect how the user wanted it done?*
+*τ³ grades whether an agent reaches the goal. τ-PreflightCheck adds a second: did it respect how the user wanted it done? — and its failures seed expert-authored **preflight checks**, one per consequential action.*
 
 ## Motivation
 
