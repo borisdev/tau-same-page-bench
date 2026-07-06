@@ -108,6 +108,8 @@ The field is optional (`default None`), so existing tasks are unaffected and the
 
 ## Impact on AI quality: eliciting SME expertise
 
+High variance in agent performance across rounds for a given action is itself a signal: the general prompt/policy fine-tuning isn't reliably covering that action. That's the cue to stop tuning the general policy and instead author a specific **SME preflight protocol** for that action.
+
 To illustrate how this bench can be integrated with SME expertise, below are synthetic SME protocols answering *what must a customer-service agent establish about the user before taking action X?*:
 
 | Agent action | SME-elicited preflight protocol | Example failure caught |
