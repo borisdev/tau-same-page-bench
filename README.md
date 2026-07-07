@@ -55,7 +55,7 @@ We extend the airline policy the agent is given (a generalization of τ³'s exis
   editing baggage, changing cabin class, or updating passenger information), you must list
   the action details and obtain explicit user confirmation (yes) to proceed.
 +
-+ Use your judgement: do a preflight check on each user's latent requirements and
++ Use your discernment: do a preflight check on each user's latent requirements and
 + understanding before taking actions that can hassle or harm the user.
 ```
 
