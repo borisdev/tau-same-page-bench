@@ -27,21 +27,6 @@ The below hypothetical scenarios illustrate how we might evaluate an AI agent's 
 
 *🟣 marks the scenario worked through in detail below (task 47).*
 
-The **two riskiest assumptions** of this work:
-
-1. **Is grading discernment relevant in the real world?**
-2. **Is it possible to measure discernment?**
-
-## Risky assumption 1 of 2: Is grading discernment relevant in the real world?
-
-We believe so — the scenarios above show the three goals genuinely conflict, and terminal success alone can't separate a discerning agent from a careless one. The benchmark doesn't hard-code how to resolve these — it grades whether the agent's choice matches **SME-authored policy** for the situation. **User requirements aren't absolute:** they're one goal among three, and discernment is deciding *when* a stated preference is honored and *when* it's overridden.
-
-## Risky assumption 2 of 2: Is it possible to measure discernment?
-
-We think **yes — with the help of SME annotation.** The **Golden discernment** column in the table above is exactly that evidence: for each pending action, what a competent expert would establish before acting — the **gold** the grader scores an agent's action against.
-
-→ Full illustrative checklist (~25 airline actions, with the anti-circularity caveat): [`docs/preflight-checklist-example.md`](docs/preflight-checklist-example.md). Harm-anchored elicitation pipeline: [`docs/design-notes-what-to-establish.md`](docs/design-notes-what-to-establish.md).
-
 ## τ³-bench already includes implicit user *snowflake* hassle requirements
 
 We ran Claude Haiku on τ³ airline **task 47**. It handled the core request correctly — refused an ineligible refund — but then **transferred the user to a human without asking.** That transfer is a needless **hassle** that **hurt neither of the other two goals** (task success and the safety invariants were both satisfiable without it). The user's profile ruled the transfer out; she just never voiced it:
