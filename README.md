@@ -59,7 +59,7 @@ We extend the airline policy the agent is given (a generalization of τ³'s exis
 + understanding before taking actions that can hassle or harm the user.
 ```
 
-**Make it gradeable — the patch.** One optional field on τ³'s own `StructuredUserInstructions` (no wrapper) plus a grader that reads it — `default None`, so existing tasks and the prose stay unchanged and the agent never sees it:
+We patched τ³'s own `StructuredUserInstructions`, and the grader reads it in a way that keeps the agent's input unchanged:
 
 ```diff
   # src/tau2/data_model/tasks.py
