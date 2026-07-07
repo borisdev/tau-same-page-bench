@@ -71,20 +71,6 @@ Populate it for task 47 — the same requirement, typed, with provenance (`sourc
 +   ])
 ```
 
-## The same gap, in three domains
-
-*Right on the outcome, wrong on the how* isn't specific to customer service — it recurs wherever an agent takes **consequential actions for a person**, and each domain supports the thesis differently:
-
-**Coding agents (SWE) — the closest structural match.** Developers differ in how much they tolerate an agent acting *without asking* — some auto-approve everything, others want a confirm before anything destructive (force-push, deploy, `rm`). Claude Code's allow/deny permission lists *are* a per-developer preflight policy. Yet **SWE-bench grades whether the patch passes the hidden tests — blind to whether the agent rewrote git history or clobbered unrelated files to get there.** Same outcome-only blind spot as τ-bench; the mechanism ships, but nobody scores the *calibration*.
-
-**Medicine — the depth.** A treatment can win the average RCT yet be wrong for *this* patient, whose comorbidities, values, and side-effect tolerance don't match the trial. GRADE names that gap **indirectness**; *personalized medicine* is the fix — matching intervention → patient. Outcome-only grading measures average efficacy, blind to fit.
-
-**Customer service — where we run.** The task solution must fit *this* customer's latent requirements, not just complete the task.
-
-One thesis, three domains: **AI that's right on average but wrong for the individual.**
-
-**Related benchmarks.** Agent-safety work grades *harm* but not *proportionality*: **AgentHarm** asks whether an agent recognizes and avoids harmful actions; **Safety-Gymnasium** frames safe RL as *maximize reward subject to a cost budget*. We adapt that shape to language agents — *maximize effectiveness, minimize harm, minimize hassle* — where harm and hassle arise from **policy interpretation under ambiguity**, not physical constraints.
-
 ## What we grade: decision-level discernment
 
 τ-bench grades once, at the end. Discernment is graded **at every consequential decision**. Instead of only asking *did the trajectory succeed?*, we ask, repeatedly:
@@ -104,6 +90,8 @@ Each decision lands in a **harm-vs-hassle confusion matrix** — the discernment
 | **Agent proceeds**   |              Correct              |  **Harm** *(under-caution · FN)*   |
 
 The two errors are **not symmetric**: *a hassle to avoid a harm is fine; a harm to avoid a hassle is not.* So the matrix is **severity-weighted** — a harm (FN) counts for far more than a hassle (FP), and *degree* matters too (one needless question ≠ six). Concretely: **overriding a customer who feels hassled by an escalation is the *right* call if it saves her $1,000 and her seat on the flight to her daughter's wedding.** Under-caution — letting a harm through to avoid a hassle — is the failure that matters most.
+
+**Related benchmarks.** Agent-safety work grades *harm* but not *proportionality*: **AgentHarm** asks whether an agent recognizes and avoids harmful actions; **Safety-Gymnasium** frames safe RL as *maximize reward subject to a cost budget*. We adapt that shape to language agents — *maximize effectiveness, minimize harm, minimize hassle* — where harm and hassle arise from **policy interpretation under ambiguity**, not physical constraints.
 
 ## How to reproduce
 
